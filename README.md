@@ -90,10 +90,11 @@ Tesseract OCR: Must be installed as a standalone program.
 | `pdf_extractor/extractor.py` | Contains the `PDFExtractor` class, advanced OCR logic, and image pre-processing steps. |
 | `pdf_extractor/pdf_generator.py`| Utility script responsible for creating the multi-content test PDF. |
 | `pdf_extractor/Rag/pipeline.py`| Contains the `build_rag` function and logic for Vector Store creation and LLM connectivity. |
-| `pdf_extractor/Rag/llm_api.py`**| Handles the API communication layer and prompt formatting with the OpenRouter LLM. |
-| `output.json`** | The final generated JSON file containing all structured PDF extraction results (text, tables, OCR data). |
+| `pdf_extractor/Rag/llm_api.py`| Handles the API communication layer and prompt formatting with the OpenRouter LLM. |
+| **`output.json`** | The final generated JSON file containing all structured PDF extraction results (text, tables, OCR data). |
 | `.env` | Stores the confidential API key (Ignored by Git for security). |
 | `.gitignore` | Defines files and folders (e.g., `.env`, `venv/`, cache files) to be ignored by Git. |
+
 
 
 
