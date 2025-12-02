@@ -67,7 +67,19 @@ Tesseract OCR: Must be installed as a standalone program.
       *.faiss
       *.pkl
 
+## Usage
+   ## The entry point for the pipeline is run_pdf.py.
+      Update Image Path: Modify the IMAGE_TO_EMBED variable inside run_pdf.py to point to the clear image you wish to use for OCR testing:
+      In run_pdf.py
+      IMAGE_TO_EMBED = r"C:\Path\To\Your\Sample_Printed_Image.jpg"
+
+## Run the Pipeline: 
+      python run_pdf.py
+
+## Expected Outcome
+   The program will: Generate the test PDF, extract all text and tables, run OCR on the embedded image, build the Vector Store, and answer the predefined query (What is the text extracted via OCR?).
  
+
 
 
 
