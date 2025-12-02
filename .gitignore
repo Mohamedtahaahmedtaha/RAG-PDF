@@ -1,0 +1,12 @@
+.env
+.env.*
+venv/
+__pycache__/
+*.pyc
+*.o
+*.so
+.vscode/
+*.faiss
+*.pkl
+*.log
+*cache*
