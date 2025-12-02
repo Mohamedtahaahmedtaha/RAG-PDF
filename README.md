@@ -31,14 +31,17 @@ Tesseract OCR: Must be installed as a standalone program.
 
 
 ## Setup and Installation
-1. Clone and Virtual Environment
-   ### Clone the repository
-git clone https://github.com/MohamedTahaAhmedTaha/RAG-PDF.git
-cd RAG-PDF
-
-### Create and activate the virtual environment
+## 1. Clone and Virtual Environment
+   Clone the repository
+   git clone https://github.com/MohamedTahaAhmedTaha/RAG-PDF.git
+   cd RAG-PDF
+   
+   Create and activate the virtual environment
+## 2. Install Dependencies
+   Install all necessary libraries (it's recommended to create a requirements.txt file, but you can use this command):
 python -m venv venv
 ### For Windows (PowerShell):
 .\venv\Scripts\activate
+
 
 
