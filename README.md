@@ -8,16 +8,15 @@ This project provides a complete Retrieval-Augmented Generation (RAG) pipeline i
 
 
 
+## Key Features
+Integrated RAG Architecture: A robust system for building a Vector Store to enable contextual retrieval and question answering.
 
-# Key Features
-Multi-Format Extraction: Supports direct extraction of Arabic and English text blocks, and structured tables using libraries like PyMuPDF and pdfplumber.
+Multi-Format Extraction: Supports direct extraction of Arabic and English text blocks, and structured tables from PDFs.
 
-Advanced OCR Processing: Utilizes Tesseract OCR with image pre-processing techniques (Grayscale and Contrast Enhancement) to accurately read embedded images and extract text (including challenging handwritten content) from PDFs.
+Advanced OCR Support: Utilizes Tesseract OCR with image pre-processing techniques (Grayscale & Contrast Enhancement) to improve the reading of embedded images (including challenging handwritten content).
 
-Integrated RAG Architecture: Builds a robust Vector Store (using FAISS) from the extracted content to enable precise semantic search and contextual retrieval.
+LLM Integration: Connects to the OpenRouter API endpoint for enhanced language model generation capabilities.
 
-LLM Integration: Connects with the OpenRouter API endpoint for powerful language model generation, ensuring answers are grounded in the document data.
-
-Multilingual Support: Designed to process, categorize, and answer based on both Arabic and English content efficiently.
+PDF Generation: Includes utility to generate test PDFs containing mixed content (text, tables, and images).
 
 
