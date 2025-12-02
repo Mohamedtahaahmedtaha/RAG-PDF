@@ -54,8 +54,21 @@ Tesseract OCR: Must be installed as a standalone program.
          pytesseract.pytesseract.tesseract_cmd = r"C:\Tesseract-OCR\tesseract.exe"
 
 ## Secret Configuration
+   ## 1. API Key (.env)
+      Create a file named .env in your project's root directory and add your OpenRouter API key:
+      .env file content
+      OPENROUTER_API_KEY="sk-or-..."
+
+   ## 2. Protect Secrets (.gitignore)
+      Ensure your .gitignore file exists and includes the following lines to prevent secret keys and local files from being uploaded:
+      .env
+      venv/
+      __pycache__/
+      *.faiss
+      *.pkl
 
  
+
 
 
 
