@@ -20,3 +20,12 @@ LLM Integration: Connects to the OpenRouter API endpoint for enhanced language m
 PDF Generation: Includes utility to generate test PDFs containing mixed content (text, tables, and images).
 
 
+# Prerequisites
+Ensure the following components are installed on your system:
+
+Python 3.9+
+
+Git
+
+Tesseract OCR: Must be installed as a standalone program.
+
