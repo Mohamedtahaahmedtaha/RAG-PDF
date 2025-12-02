@@ -7,10 +7,10 @@ from typing import Dict, List, Any
 import fitz
 import pdfplumber
 import pandas as pd
-from langdetect import detect
 import pytesseract
-from PIL import Image
+from PIL import Image, ImageFilter
 import io
+import re 
 
 import arabic_reshaper
 from bidi.algorithm import get_display
@@ -18,19 +18,26 @@ from bidi.algorithm import get_display
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe" 
+
+# Helper Functions
 
 def is_arabic(text: str) -> bool:
-    """Detect if text is Arabic."""
-    if not text or not text.strip():
+    """
+    Detect Arabic using extended Unicode ranges via regex.
+    The ranges have been updated to include Arabic Presentation Forms 
+    (FB50–FDFF and FE70–FEFF) to ensure the capture of text extracted from PDF.
+    """
+    if not text:
         return False
-    try:
-        return detect(text) == "ar"
-    except Exception:
-        return False
+        
+    arabic_pattern = r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]'
+    
+    #Check any arabic letter 
+    return bool(re.search(arabic_pattern, text))
 
 
 def clean_text(text: str) -> str:
-    """Normalize and clean extracted text."""
     if not text:
         return ""
     text = text.replace("\u200f", "").replace("\u200e", "")
@@ -46,15 +53,15 @@ class PDFExtractor:
         if not self.pdf_path.exists():
             raise FileNotFoundError(f"PDF not found: {self.pdf_path}")
 
+        # final storage
         self.text_ar: List[str] = []
         self.text_en: List[str] = []
-        self.tables: List[List[Dict[str, Any]]] = []
-        self.images: List[Dict[str, Any]] = []
+        self.tables: List[Any] = []
+        self.images: List[Any] = []
         self.ocr_text: List[str] = []
 
-
+    # Extract TEXT (AR + EN)
     def extract_text(self) -> None:
-        """Extract Arabic/English text from PDF."""
         logger.info("Extracting text...")
         doc = fitz.open(self.pdf_path)
 
@@ -69,38 +76,40 @@ class PDFExtractor:
                 if not raw:
                     continue
 
-                # Arabic reshaping
+                # Detect Arabic
                 if is_arabic(raw):
-                    reshaped = arabic_reshaper.reshape(raw)
+                    
+                    raw_reversed_chars = raw[::-1] 
+                    
+                    reshaped = arabic_reshaper.reshape(raw_reversed_chars)
                     fixed = get_display(reshaped)
+                    
                     self.text_ar.append(fixed)
                 else:
                     self.text_en.append(raw)
+        
+        logger.info(f"Text extracted: {len(self.text_en)} EN | {len(self.text_ar)} AR")
 
-        logger.info(f"Text extracted: {len(self.text_ar)} AR | {len(self.text_en)} EN")
 
-
-    def extract_tables(self) -> None:
-        """Extract tables using pdfplumber."""
+    # Extract Tables
+    def extract_tables(self):
         logger.info("Extracting tables...")
 
         with pdfplumber.open(self.pdf_path) as pdf:
             for page in pdf.pages:
-                try:
-                    tables = page.extract_tables()
-                except Exception:
+                raw_tables = page.extract_tables()
+                if not raw_tables:
                     continue
 
-                for tbl in tables:
+                for tbl in raw_tables:
                     df = pd.DataFrame(tbl).fillna("").astype(str)
                     self.tables.append(df.to_dict(orient="records"))
 
         logger.info(f"Tables extracted: {len(self.tables)}")
 
-
-    def extract_images(self) -> None:
-        """Extract images and run OCR on them."""
-        logger.info("Extracting images and running OCR...")
+    # Extract Images + OCR
+    def extract_images(self):
+        logger.info("Extracting images + OCR...")
         doc = fitz.open(self.pdf_path)
 
         for page_idx, page in enumerate(doc):
@@ -108,63 +117,64 @@ class PDFExtractor:
                 xref = img[0]
                 pix = fitz.Pixmap(doc, xref)
 
+                # fix color space
                 if pix.n > 4:
                     pix = fitz.Pixmap(fitz.csRGB, pix)
 
-                png_bytes = pix.tobytes("png")
-                b64 = base64.b64encode(png_bytes).decode("utf-8")
+                png = pix.tobytes("png")
+                b64 = base64.b64encode(png).decode()
 
+                # save image info
                 self.images.append({
                     "page": page_idx + 1,
                     "index": img_idx + 1,
-                    "data_base64": b64,
+                    #"data_base64": b64 #
                 })
 
-                # OCR Enhancements
+                #  OCR Enhancement 
                 try:
-                    # Load and prepare image
-                    img_pil = Image.open(io.BytesIO(png_bytes)).convert("RGB")
+                    pil = Image.open(io.BytesIO(png))
 
-                    # High-quality preprocessing
-                    img_pil = img_pil.resize((img_pil.width * 3, img_pil.height * 3))
-                    img_pil = img_pil.convert("L")
-                    img_pil = img_pil.filter(Image.Filter.SMOOTH_MORE)
-                    img_pil = img_pil.point(lambda x: 255 if x > 160 else 0)
+                    # upscale
+                    pil = pil.resize((pil.width * 3, pil.height * 3))
 
-                    # OCR (Arabic + English)
-                    custom_config = "--oem 3 --psm 6"
-                    text = pytesseract.image_to_string(img_pil, lang="eng+ara", config=custom_config)
+                    # convert to grayscale
+                    pil = pil.convert("L")
 
-                    cleaned = clean_text(text)
+                    # sharpen + threshold
+                    pil = pil.filter(ImageFilter.SHARPEN) 
+                    # pil = pil.point(lambda x: 255 if x > 150 else 0) 
 
+                    # OCR on Arabic + English
+                    text = pytesseract.image_to_string(
+                        pil,
+                        lang="eng+ara",
+                        config="--oem 3 --psm 6"
+                    )
 
-                    if cleaned:
-                        self.ocr_text.append(cleaned)
+                    text = clean_text(text)
+
+                    if text.strip():
+                        self.ocr_text.append(text)
 
                 except Exception as e:
-                    logger.warning(f"OCR failed for image p{page_idx+1}_i{img_idx+1}: {e}")
+                    logger.warning(f"OCR failed for image {img_idx}: {e}")
 
-        logger.info(f"OCR texts extracted: {len(self.ocr_text)}")
+        logger.info(f"OCR extracted: {len(self.ocr_text)} item(s)")
 
-
+    # Extract Everything
     def extract_all(self) -> Dict[str, Any]:
-        """Run full extraction sequence."""
-        logger.info(f"Starting full PDF extraction: {self.pdf_path.name}")
+        logger.info("Starting full extraction...")
 
         self.extract_text()
         self.extract_tables()
         self.extract_images()
 
-        # Show OCR for debugging
-        print("\n OCR TEXT:")
-        for line in self.ocr_text:
-            print("-", line)
-
         return {
             "source_pdf": self.pdf_path.name,
             "text": {
-                "arabic": self.text_ar,
                 "english": self.text_en,
+                "arabic": self.text_ar,
             },
             "tables": self.tables,
             "images": self.images,
@@ -172,11 +182,9 @@ class PDFExtractor:
         }
 
 
-# Save JSON
 
-def save_json(data: Dict[str, Any], output_path: str = "output.json") -> None:
-    """Save JSON output."""
+# SAVE JSON
+def save_json(data: Dict[str, Any], output_path="output.json"):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-
     logger.info(f"Saved JSON → {output_path}")
