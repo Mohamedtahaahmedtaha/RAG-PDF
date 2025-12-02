@@ -1,4 +1,4 @@
-### RAG-PDF
+# RAG-PDF
 
 
 This project provides a complete Retrieval-Augmented Generation (RAG) pipeline implemented in Python, designed for extracting and analyzing data from complex PDF documents. The architecture efficiently handles various content types and uses a Large Language Model (LLM) to answer questions based strictly on the extracted context.
@@ -28,4 +28,5 @@ Python 3.9+
 Git
 
 Tesseract OCR: Must be installed as a standalone program.
+
 
