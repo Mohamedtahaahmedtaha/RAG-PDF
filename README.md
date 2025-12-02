@@ -31,17 +31,32 @@ Tesseract OCR: Must be installed as a standalone program.
 
 
 ## Setup and Installation
-## 1. Clone and Virtual Environment
-   Clone the repository
-   git clone https://github.com/MohamedTahaAhmedTaha/RAG-PDF.git
-   cd RAG-PDF
+   ## 1. Clone and Virtual Environment
+      Clone the repository
+         git clone https://github.com/MohamedTahaAhmedTaha/RAG-PDF.git
+         cd RAG-PDF
+      
+      Create and activate the virtual environment
+         python -m venv venv
+      For Windows (PowerShell):
+         .\venv\Scripts\activate
+   ## 2. Install Dependencies
+      Install all necessary libraries (it's recommended to create a requirements.txt file, but you can use this command):
+         pip install pymupdf pdfplumber pytesseract pandas langdetect python-bidi pillow reportlab python-dotenv langchain langchain-openai faiss-cpu
    
-   Create and activate the virtual environment
-## 2. Install Dependencies
-   Install all necessary libraries (it's recommended to create a requirements.txt file, but you can use this command):
-python -m venv venv
-### For Windows (PowerShell):
-.\venv\Scripts\activate
+   ## 3. Tesseract OCR Configuration (Crucial Step)
+      To resolve common Windows path issues, you must manually set the Tesseract path:
+      
+      Relocate: Move the entire Tesseract folder to a simple, non-default path, such as: C:\Tesseract-OCR\.
+      
+      Update Code: Ensure the pdf_extractor/extractor.py file points to the correct executable path:
+         In pdf_extractor/extractor.py
+         pytesseract.pytesseract.tesseract_cmd = r"C:\Tesseract-OCR\tesseract.exe"
+
+## Secret Configuration
+
+ 
+
 
 
 
